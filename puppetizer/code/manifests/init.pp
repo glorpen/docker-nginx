@@ -126,9 +126,9 @@ class puppetizer_main (
   Service <| title == 'nginx' |> {
     provider => 'base',
     start => "/usr/sbin/nginx -t -c /etc/nginx/nginx.conf && /usr/sbin/nginx -c /etc/nginx/nginx.conf",
-    stop => "/usr/sbin/nginx -s stop && sleep 1s",
+    stop => "/usr/sbin/nginx -s stop && while /bin/pkill -f -0 'nginx: master'; do sleep 0.5s; done",
     restart => "/usr/sbin/nginx -s reload",
-    status => "/bin/pkill -0 nginx",
+    status => "/bin/pkill -f -0 'nginx: master'",
   }
   
   service { 'cron':
@@ -140,10 +140,6 @@ class puppetizer_main (
   }
   
   puppetizer::health { 'nginx':
-    command => '/bin/pkill -0 nginx; exit $?'
+    command => 'pkill -f -0 "nginx: master"; exit $?'
   }
-  
-  # shutdown cronie service
-  # shutdown nginx service
-  #--test-cert
 }
