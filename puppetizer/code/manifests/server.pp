@@ -5,6 +5,7 @@ define puppetizer_main::server(
   Hash $locations = {},
   Hash $config
 ){
+  # TODO: ensure absent
   if $ssl_letsencrypt != false {
     
     # since nginx will not start if there is not ssl certs when ssl is enabled

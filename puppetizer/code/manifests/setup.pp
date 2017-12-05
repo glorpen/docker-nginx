@@ -55,7 +55,11 @@ class puppetizer_main::setup {
     file {$::puppetizer_main::le_live_dir:
       ensure => directory,
       mode => 'a=rx,u+w',
-      require => File['/etc/letsencrypt']
+      require => File['/etc/letsencrypt'],
+      purge => true,
+      force => true,
+      recurse => true,
+      recurselimit => 1
     }
   }
 }
