@@ -1,41 +1,18 @@
 class puppetizer_main (
   Hash $servers = {},
-  Optional[String] $letsencrypt_email = undef 
+  Optional[String] $letsencrypt_email = undef,
+  Hash $auth_basic = {}
 ){
   # https://github.com/certbot/certbot/blob/master/certbot-nginx/certbot_nginx/options-ssl-nginx.conf
   
-  include ::stdlib
-  
-  package { ['epel-release', 'cronie']: }->
-  class { 'letsencrypt':
-    email => $letsencrypt_email,
-    manage_config => $::puppetizer['running'],
-    configure_epel => false,
-    package_ensure => '0.19.0'
-  }
-  
-  class { 'nginx':
-    service_ensure => $::puppetizer['running'],
-    package_ensure => '1.12.2'
-  }
-    
   $certbot_webroot = '/var/nginx/certboot'
-  file { $certbot_webroot:
-    ensure => directory,
-    require => [Class['nginx'], Class['letsencrypt']],
-    purge => true,
-    force => true,
-    backup => false,
-    recurse => true,
-    mode => 'a=rx,u+w'
-  }
-
+  $auth_dir = '/etc/nginx/auth'
+  $le_live_dir = '/etc/letsencrypt/live'
+  
+  include ::stdlib
+  include ::puppetizer_main::setup
+  
   if $::puppetizer['running'] {
-    file {'/etc/letsencrypt/live':
-      ensure => directory,
-      mode => 'a=rx,u+w',
-      require => File['/etc/letsencrypt']
-    }
     
     $servers.each | $name, $config | {
       
@@ -48,14 +25,14 @@ class puppetizer_main (
         # we create temporary self-signed certs
         # and later replace it with valid ones
         
-        $le_path = "/etc/letsencrypt/live/${name}"
+        $le_path = "${le_live_dir}/${name}"
         $le_cert_path = "${le_path}/fullchain.pem"
         $le_key_path = "${le_path}/privkey.pem"
         
         file {$le_path:
           ensure => directory,
           mode => 'a=rx,u+w',
-          require => File['/etc/letsencrypt/live'],
+          require => File[$le_live_dir],
         }->
         exec { "letsencrypt temp certs for ${name}":
           # create until letsencrypt generates cert
@@ -138,25 +115,9 @@ class puppetizer_main (
     }
   }
   
-  resources{"cron": purge => true}
-  
-  Service <| title == 'nginx' |> {
-    provider => 'base',
-    start => "/usr/sbin/nginx -t -c /etc/nginx/nginx.conf && /usr/sbin/nginx -c /etc/nginx/nginx.conf",
-    stop => "/usr/sbin/nginx -s stop && while /bin/pkill -f -0 'nginx: master'; do sleep 0.5s; done",
-    restart => "/usr/sbin/nginx -s reload",
-    status => "/bin/pkill -f -0 'nginx: master'",
-  }
-  
-  service { 'cron':
-    ensure => $::puppetizer['running'],
-    provider => 'base',
-    start => '/usr/sbin/crond -s',
-    stop => '/bin/pkill crond',
-    status => "/bin/pkill -0 crond",
-  }
-  
-  puppetizer::health { 'nginx':
-    command => 'pkill -f -0 "nginx: master"; exit $?'
+  $auth_basic.each | $name, $users | {
+    ::puppetizer_main::auth_basic { $name:
+      users => $users
+    }
   }
 }
