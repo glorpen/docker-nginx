@@ -40,6 +40,7 @@ class puppetizer_main (
     $servers.each | $name, $config | {
       
       $use_letsencrypt = $config['ssl_letsencrypt'] == true
+      $ssl_redirect = $config['ssl_redirect'] == true;
       
       if $use_letsencrypt {
         
@@ -68,13 +69,16 @@ class puppetizer_main (
         $_config_letsencrypt = {
           ssl_cert    => $le_cert_path,
           ssl_key     => $le_key_path,
+          ssl_redirect => false
         }
       } else {
-        $_config_letsencrypt = {}
+        $_config_letsencrypt = {
+          'ssl_redirect' => $ssl_redirect
+        }
       }
       
       $_config = merge(
-        delete($config, ['ssl_letsencrypt']),
+        delete($config, ['ssl_letsencrypt', 'ssl_redirect']),
         $_config_letsencrypt
       )
       
@@ -101,6 +105,19 @@ class puppetizer_main (
           www_root => "${certbot_webroot}/${name}",
           location_allow => ['all'],
           require => File[$webroot]
+        }
+        
+        if $ssl_redirect {
+          nginx::resource::location {"letsencrypt ${name} ssl-redirect":
+            ensure => present,
+            server => $name,
+            priority => 550,
+            ssl => false,
+            location => "/",
+            location_cfg_append => {
+              "return" => '301 https://$host$request_uri'
+            }
+          }
         }
         
         # remove temporary certs so letsencrypt can create directory
