@@ -1,11 +1,11 @@
 define puppetizer_main::server(
-  Boolean $ssl_letsencrypt = false,
+  Variant[Boolean,Enum['test']] $ssl_letsencrypt = false,
   Boolean $ssl_redirect = false,
   Optional[String] $auth_basic_source = undef,
   Hash $locations = {},
   Hash $config
 ){
-  if $ssl_letsencrypt {
+  if $ssl_letsencrypt != false {
     
     # since nginx will not start if there is not ssl certs when ssl is enabled
     # we create temporary self-signed certs
@@ -82,7 +82,7 @@ define puppetizer_main::server(
     * => $_config
   }
   
-  if $ssl_letsencrypt {
+  if $ssl_letsencrypt != false {
     $webroot = "${::puppetizer_main::certbot_webroot}/${name}"
     
     file { $webroot:
@@ -115,6 +115,12 @@ define puppetizer_main::server(
       }
     }
     
+    if $ssl_letsencrypt == 'test' {
+      $cert_args = ['--test-cert']
+    } else {
+      $cert_args = []
+    }
+    
     # remove temporary certs so letsencrypt can create directory
     exec { "letsencrypt remove tmp certificates for ${name}":
       command => "/bin/rm -rf ${le_path}",
@@ -124,7 +130,7 @@ define puppetizer_main::server(
     letsencrypt::certonly { $name:
       plugin => 'webroot',
       webroot_paths => ["${::puppetizer_main::certbot_webroot}/${name}"],
-      additional_args => ['--test-cert', '--non-interactive'],
+      additional_args => concat(['--non-interactive'], $cert_args),
       manage_cron => true,
       cron_success_command => 'nginx -s reload',
       require => [Class['nginx'], Nginx::Resource::Location["letsencrypt ${name}"]]
