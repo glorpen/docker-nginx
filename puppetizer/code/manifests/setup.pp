@@ -4,12 +4,12 @@ class puppetizer_main::setup {
     email => $::puppetizer_main::letsencrypt_email,
     manage_config => $::puppetizer['running'],
     configure_epel => false,
-    package_ensure => '0.19.0'
+    package_ensure => $::puppetizer_main::letsencrypt_version
   }
   
   class { 'nginx':
     service_ensure => $::puppetizer['running'],
-    package_ensure => '1.12.2'
+    package_ensure => $::puppetizer_main::nginx_version
   }
     
   file { $::puppetizer_main::certbot_webroot:
@@ -45,7 +45,10 @@ class puppetizer_main::setup {
   }
   
   file { $::puppetizer_main::auth_dir:
-    ensure => directory
+    ensure => directory,
+    purge => true,
+    force => true,
+    notify => Service['nginx']
   }
   
   if $::puppetizer['running'] {
