@@ -1,5 +1,5 @@
 mod 'puppetlabs/stdlib', '4.19.0'
 mod 'puppetlabs/concat', '4.1.0'
-mod 'puppet/nginx', '0.8.0'
+mod 'puppet/nginx', '0.9.0'
 mod 'puppetlabs/inifile', '1.6.0'
 mod 'puppet/letsencrypt', '2.0.1'
