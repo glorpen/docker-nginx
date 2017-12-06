@@ -69,7 +69,7 @@ define puppetizer_main::server(
         $_v = $v
       }
       [$location_name, merge($_v, {
-        "location": $k
+        "location" => $k
       })]
     })
   }
@@ -127,6 +127,7 @@ define puppetizer_main::server(
     }
     
     # remove temporary certs so letsencrypt can create directory
+    Service['nginx']->
     exec { "letsencrypt remove tmp certificates for ${name}":
       command => "/bin/rm -rf ${le_path}",
       creates => "${le_path}/chain.pem",
@@ -138,7 +139,12 @@ define puppetizer_main::server(
       additional_args => concat(['--non-interactive'], $cert_args),
       manage_cron => true,
       cron_success_command => 'nginx -s reload',
-      require => [Class['nginx'], Nginx::Resource::Location["letsencrypt ${name}"]]
+      require => [Nginx::Resource::Location["letsencrypt ${name}"]]
+    }~>
+    exec {"letsencrypt.${name} nginx reload":
+      command => '/usr/sbin/nginx -s reload',
+      refreshonly => true
     }
+    
   }
 }
