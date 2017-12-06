@@ -3,7 +3,8 @@ define puppetizer_main::server(
   Boolean $ssl_redirect = false,
   Optional[String] $auth_basic_source = undef,
   Hash $locations = {},
-  Hash $config
+  Hash $config,
+  String $ipv6_listen_options = ''
 ){
   # TODO: ensure absent
   if $ssl_letsencrypt != false {
@@ -54,10 +55,12 @@ define puppetizer_main::server(
   
   $_config_locations = {
     'locations' => Hash($locations.map | $k, $v | {
+      # make location names unique by design
+      $location_name = "${name}-${k}"
       $auth_source = $v['auth_basic_source']
       if $auth_source {
         Puppetizer_main::Auth_basic[$auth_source]->
-        Nginx::Resource::Location[$k]
+        Nginx::Resource::Location[$location_name]
         
         $_v = merge(delete($v, ['auth_basic_source']), {
           'auth_basic_user_file' => "${::puppetizer_main::auth_dir}/${auth_source}.passwd"
@@ -65,7 +68,9 @@ define puppetizer_main::server(
       } else {
         $_v = $v
       }
-      [$k, $_v]
+      [$location_name, merge($_v, {
+        "location": $k
+      })]
     })
   }
   
@@ -76,10 +81,9 @@ define puppetizer_main::server(
     $_config_locations
   )
   
-  
-  
   nginx::resource::server { $name:
     use_default_location => false,
+    ipv6_listen_options => $ipv6_listen_options,
     * => $_config
   }
   

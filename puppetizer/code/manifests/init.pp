@@ -15,7 +15,10 @@ class puppetizer_main (
   include ::puppetizer_main::setup
   
   if $::puppetizer['running'] {
-    $_supported_params = ['ssl_letsencrypt', 'ssl_redirect', 'auth_basic_source', 'locations']
+    $_supported_params = [
+      'ssl_letsencrypt', 'ssl_redirect', 'auth_basic_source', 'locations',
+      'ipv6_listen_options'
+    ]
     
     $servers.each | $name, $config | {
       $resource_config = Hash($_supported_params.map | $v | {
