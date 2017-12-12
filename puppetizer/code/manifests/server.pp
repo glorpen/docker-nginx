@@ -74,7 +74,13 @@ define puppetizer_main::server(
     })
   }
   
+  $_config_defaults = {
+    'ipv6_enable' => true,
+    'http2' => 'on'
+  }
+  
   $_config = merge(
+    $_config_defaults,
     $config,
     $_config_letsencrypt,
     $_config_auth,
