@@ -2,8 +2,8 @@ class puppetizer_main (
   Hash $servers = {},
   Optional[String] $letsencrypt_email = undef,
   Hash $auth_basic = {},
-  String $letsencrypt_version = '0.19.0',
-  String $nginx_version = '1.12.2'
+  String $letsencrypt_version,
+  String $nginx_version
 ){
   # https://github.com/certbot/certbot/blob/master/certbot-nginx/certbot_nginx/options-ssl-nginx.conf
   

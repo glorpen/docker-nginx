@@ -1,0 +1,2 @@
+puppetizer_main::letsencrypt_version: 0.23.0
+puppetizer_main::nginx_version: 1.14.0
