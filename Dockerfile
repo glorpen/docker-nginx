@@ -1,4 +1,4 @@
-FROM glorpen/puppetizer-base:centos-latest
+FROM glorpen/puppetizer-base:alpine-latest
 
 LABEL maintainer="Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>"
 LABEL eu.glorpen.puppetizer.builder="1.0.0"

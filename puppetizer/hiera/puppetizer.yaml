@@ -1,2 +1,6 @@
-puppetizer_main::letsencrypt_version: 0.23.0
-puppetizer_main::nginx_version: 1.14.0
+lookup_options:
+  "puppetizer_main::servers":
+    strategy: hash
+
+puppetizer_main::letsencrypt_version: 0.26.1
+puppetizer_main::nginx_version: 1.12.2-r3
