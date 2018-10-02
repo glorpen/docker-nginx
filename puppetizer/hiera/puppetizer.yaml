@@ -2,5 +2,5 @@ lookup_options:
   "puppetizer_main::servers":
     strategy: hash
 
-puppetizer_main::letsencrypt_version: 0.26.1
+puppetizer_main::letsencrypt_version: 0.27.1
 puppetizer_main::nginx_version: 1.12.2-r3
