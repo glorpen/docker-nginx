@@ -19,7 +19,7 @@ class puppetizer_main (
   if $::puppetizer['running'] {
     $_supported_params = [
       'ssl_letsencrypt', 'ssl_redirect', 'auth_basic_source', 'locations',
-      'ipv6_listen_options'
+      'ipv6_listen_options', 'ssl_letsencrypt_domains'
     ]
     
     $servers.each | $name, $config | {

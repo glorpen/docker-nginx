@@ -5,7 +5,8 @@ define puppetizer_main::server(
   Optional[String] $auth_basic_source = undef,
   Hash $locations = {},
   Hash $config,
-  String $ipv6_listen_options = ''
+  String $ipv6_listen_options = '',
+  Array[String] $ssl_letsencrypt_domains = []
 ){
   if $ensure == 'present' {
     if $ssl_letsencrypt != false {
@@ -136,6 +137,11 @@ define puppetizer_main::server(
         $cert_args = []
       }
       
+      $_letsencrypt_domains = $ssl_letsencrypt_domains.empty?{
+        true => [$name],
+        default => $ssl_letsencrypt_domains
+      }
+      
       # remove temporary certs so letsencrypt can create directory
       Service['nginx']->
       exec { "letsencrypt remove tmp certificates for ${name}":
@@ -144,6 +150,7 @@ define puppetizer_main::server(
         require => Nginx::Resource::Server[$name]
       }->
       letsencrypt::certonly { $name:
+        domains => $_letsencrypt_domains,
         plugin => 'webroot',
         webroot_paths => ["${::puppetizer_main::certbot_webroot}/${name}"],
         additional_args => concat(['--non-interactive'], $cert_args),
@@ -155,7 +162,6 @@ define puppetizer_main::server(
         command => '/usr/sbin/nginx -s reload',
         refreshonly => true
       }
-      #TODO: remove /etc/letsencrypt/renewal/magento.demo.ecomgroup.pl.conf when absent
     }
   } else {
     nginx::resource::server { $name:
