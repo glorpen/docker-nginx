@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+gen_cert_if_needed(){
+  path="${1}"
+  certname="${2}"
+  if [ ! -f "${path}/fullchain.pem" ];
+  then
+    mkdir -p "${path}"
+    openssl req -x509 -newkey rsa:2048 -nodes \
+    -keyout "${path}/privkey.pem" -out "${path}/fullchain.pem" \
+    -days 1 -subj "/C=XX/ST=Temporary/L=Temporary/O=Temporary/OU=Org/CN=${certname}"
+  fi
+}
+
+<% $certnames.each | $certname | { %>
+gen_cert_if_needed '<%=$consul_ssl_path %>/<%=$certname %>' '<%=$certname %>'
+<% } %>
