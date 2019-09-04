@@ -8,7 +8,8 @@ class puppetizer_main (
   Optional[String] $consul_token = undef,
   String $letsencrypt_consul_key = 'letsencrypt',
   Hash[String, Struct[{'fullchain'=>String, 'privkey'=>String}]] $consul_certnames = {},
-  Optional[String] $letsencrypt_url = undef
+  Optional[String] $letsencrypt_url = undef,
+  Integer $time_to_wait_for_domains = 0
 ){
   include ::stdlib
 

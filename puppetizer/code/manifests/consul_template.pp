@@ -43,12 +43,13 @@ class puppetizer_main::consul_template {
   }
 
   puppetizer::service { 'consul-template':
-    run_content => "#!/bin/sh -e\nexec /usr/local/bin/consul-template -config /etc/consul-template.json",
+    start_content => "#!/bin/sh -e\nexec /usr/local/bin/consul-template -config /etc/consul-template.json",
+    stop_content => "#!/bin/sh -e\nexec kill -SIGINT \$1",
   }
 
-  Service['consul-template']
-  ->Service['nginx']
+  # Service['consul-template']
+  # ->Service['nginx']
 
-  Service['consul-template']
-  ->Exec['puppetizer ssl seed']
+  # Service['consul-template']
+  # ->Exec['puppetizer ssl seed']
 }

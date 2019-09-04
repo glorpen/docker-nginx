@@ -21,7 +21,34 @@ class puppetizer_main::setup {
   }
 
   puppetizer::service { 'nginx':
-    run_content => "#!/bin/sh -e\nexec /usr/sbin/nginx -g 'daemon off;' -c /etc/nginx/nginx.conf",
+    start_content => @("END"/)
+      #!/bin/sh -e
+
+      cleanup(){
+        echo "Cleaning up"
+        kill -SIGQUIT %1 &>/dev/null || true
+        exit 0;
+      }
+
+      trap '{ cleanup; }' INT TERM
+
+      for i in \$(seq 1 ${puppetizer_main::time_to_wait_for_domains});
+      do
+        echo "Checking for working config (try \$i of ${puppetizer_main::time_to_wait_for_domains})"
+        /usr/sbin/nginx -g 'daemon off;' -t -c /etc/nginx/nginx.conf && break
+        sleep 1s
+      done
+
+      /usr/sbin/nginx -g 'daemon off;' -c /etc/nginx/nginx.conf &
+
+      wait
+
+      | END
+    ,
+    stop_content => @("END"/)
+      #!/bin/sh -e
+      exec kill -TERM \$1
+      | END
   }
 
   file { $::puppetizer_main::auth_dir:
