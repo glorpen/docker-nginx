@@ -45,7 +45,5 @@ class puppetizer_main (
     }
   }
 
-  if $consul_addr {
-    include ::puppetizer_main::consul_template
-  }
+  include ::puppetizer_main::consul_template
 }

@@ -30,6 +30,7 @@ class puppetizer_main::consul_template {
       # },
     },
     'reload_signal' => 'SIGHUP',
+    'kill_signal'   => 'SIGINT',
     'log_level'     => 'info',
     'template'      => $templates,
     # 'exec'          => {
@@ -43,8 +44,20 @@ class puppetizer_main::consul_template {
   }
 
   puppetizer::service { 'consul-template':
-    start_content => "#!/bin/sh -e\nexec /usr/local/bin/consul-template -config /etc/consul-template.json",
+    start_content => @("END"/)
+      #!/bin/sh -e
+      cleanup(){
+        kill -INT %1
+        wait
+        exit 0
+      }
+      trap '{ cleanup; }' TERM INT
+      /usr/local/bin/consul-template -config /etc/consul-template.json &
+      wait
+      | END
+    ,
     stop_content => "#!/bin/sh -e\nexec kill -SIGINT \$1",
+    enabled => $puppetizer_main::consul_addr != undef
   }
 
   # Service['consul-template']
