@@ -7,6 +7,7 @@ define puppetizer_main::server(
   String $ipv6_listen_options = '',
   Optional[String] $consul_certname = undef,
   Optional[String] $letsencrypt_certname = undef
+  Array[String] $resolver = ['127.0.0.11'];
 ){
   if $ensure == 'present' {
     if $letsencrypt_certname {
@@ -84,6 +85,7 @@ define puppetizer_main::server(
     nginx::resource::server { $name:
       use_default_location => false,
       ipv6_listen_options  => $ipv6_listen_options,
+      resolver             => $resolver,
       *                    => $_config
     }
 
