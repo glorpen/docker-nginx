@@ -1,5 +1,5 @@
 FROM hashicorp/consul-template:0.21.0-scratch as consul-template
-FROM glorpen/puppetizer-base:2.3.2-alpine3.10-6.6.0
+FROM glorpen/puppetizer-base:3.0.0-alpine3.10-6.8.0
 
 LABEL maintainer="Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>"
 
