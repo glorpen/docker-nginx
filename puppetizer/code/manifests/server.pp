@@ -6,8 +6,8 @@ define puppetizer_main::server(
   Hash $locations = {},
   String $ipv6_listen_options = '',
   Optional[String] $consul_certname = undef,
-  Optional[String] $letsencrypt_certname = undef
-  Array[String] $resolver = ['127.0.0.11'];
+  Optional[String] $letsencrypt_certname = undef,
+  Array[String] $resolver = ['127.0.0.11']
 ){
   if $ensure == 'present' {
     if $letsencrypt_certname {
